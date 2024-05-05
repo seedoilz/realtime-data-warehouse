@@ -42,7 +42,6 @@ public class HBaseUtil {
 
     /**
      * 创建HBase表格
-     *
      * @param connection
      * @param namespace
      * @param tableName

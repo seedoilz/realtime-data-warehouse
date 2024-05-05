@@ -13,10 +13,6 @@ import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
 
-/**
- * @author yhm
- * @create 2023-12-20 15:47
- */
 public class DimHBaseSinkFunction  extends RichSinkFunction<Tuple2<JSONObject, TableProcessDim>> {
 
     Connection connection ;
