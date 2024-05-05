@@ -72,6 +72,15 @@ public class DwdBaseLog extends BaseApp {
         actionStream.sinkTo(FlinkSinkUtil.getKafkaSink(Constant.TOPIC_DWD_TRAFFIC_ACTION));
     }
 
+    /**
+     * 将流进行拆分，并且将信息进行整合再输出
+     * @param isNewFixedStream
+     * @param errTag
+     * @param startTag
+     * @param displayTag
+     * @param actionTag
+     * @return
+     */
     private SingleOutputStreamOperator<String> splitLog(SingleOutputStreamOperator<JSONObject> isNewFixedStream, OutputTag<String> errTag, OutputTag<String> startTag, OutputTag<String> displayTag, OutputTag<String> actionTag) {
         return isNewFixedStream.process(new ProcessFunction<JSONObject, String>() {
             @Override
@@ -127,6 +136,12 @@ public class DwdBaseLog extends BaseApp {
         });
     }
 
+    /**
+     * 对新用户的日志信息进行修正，有些老用户通过伪造信息来伪装新用户
+     * 每一个用户都会维护一个第一次登录日期的状态，来进行检查
+     * @param keyedStream
+     * @return
+     */
     public SingleOutputStreamOperator<JSONObject> isNewFix(KeyedStream<JSONObject, String> keyedStream) {
         return keyedStream.process(new KeyedProcessFunction<String, JSONObject, JSONObject>() {
             ValueState<String> firstLoginDtState;
@@ -172,6 +187,12 @@ public class DwdBaseLog extends BaseApp {
         });
     }
 
+    /**
+     * 对数据添加水位线（watermark）
+     * 并且使用KeyBy对mid（每一个用户的唯一标识名）进行分区
+     * @param jsonObjStream
+     * @return
+     */
     private KeyedStream<JSONObject, String> keyByWithWaterMark(SingleOutputStreamOperator<JSONObject> jsonObjStream) {
 //        return jsonObjStream.assignTimestampsAndWatermarks(WatermarkStrategy.<JSONObject>forBoundedOutOfOrderness(Duration.ofSeconds(3L)).withTimestampAssigner(new SerializableTimestampAssigner<JSONObject>() {
 //            @Override
@@ -198,6 +219,11 @@ public class DwdBaseLog extends BaseApp {
         });
     }
 
+    /**
+     * 做ETL，过滤脏数据，比如page为空或者start字段为空
+     * @param stream
+     * @return
+     */
     public SingleOutputStreamOperator<JSONObject> etl(DataStreamSource<String> stream) {
         return stream.flatMap(new FlatMapFunction<String, JSONObject>() {
             @Override
