@@ -37,4 +37,6 @@ public class Constant {
 
     public static final String TOPIC_DWD_USER_REGISTER = "dwd_user_register";
 
+    public static final String HBASE_ZOOKEEPER_QUORUM = "hadoop102:2181,hadoop103:2181,hadoop104:2181";
+
 }
