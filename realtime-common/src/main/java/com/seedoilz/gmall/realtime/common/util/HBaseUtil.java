@@ -11,7 +11,6 @@ public class HBaseUtil {
 
     /**
      * 获取HBase链接
-     *
      * @return null
      */
     public static Connection getHBaseConnection() {
@@ -25,8 +24,7 @@ public class HBaseUtil {
     }
 
     /**
-     * 关闭链接
-     *
+     * 关闭连接
      * @param connection
      */
     public static void closeConnection(Connection connection) {
@@ -75,7 +73,6 @@ public class HBaseUtil {
 
     /**
      * 删除表格
-     *
      * @param connection
      * @param namespace
      * @param tableName

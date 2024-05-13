@@ -67,6 +67,11 @@ public class DimApp extends BaseApp {
 
     }
 
+    /**
+     * 将没有指定维度的数据过滤
+     * @param dimStream
+     * @return
+     */
     public SingleOutputStreamOperator<Tuple2<JSONObject, TableProcessDim>> filterColumn(SingleOutputStreamOperator<Tuple2<JSONObject, TableProcessDim>> dimStream) {
         return dimStream.map(new MapFunction<Tuple2<JSONObject, TableProcessDim>, Tuple2<JSONObject, TableProcessDim>>() {
             @Override
@@ -82,12 +87,25 @@ public class DimApp extends BaseApp {
         });
     }
 
+    /**
+     * 连接主流和广播流
+     * @param jsonObjStream
+     * @param broadcastState
+     * @param broadcastStateStream
+     * @return
+     */
     public SingleOutputStreamOperator<Tuple2<JSONObject, TableProcessDim>> connectionStream(SingleOutputStreamOperator<JSONObject> jsonObjStream, MapStateDescriptor<String, TableProcessDim> broadcastState, BroadcastStream<TableProcessDim> broadcastStateStream) {
         BroadcastConnectedStream<JSONObject, TableProcessDim> connectStream = jsonObjStream.connect(broadcastStateStream);
 
         return connectStream.process(new DimBroadcastFunction(broadcastState)).setParallelism(1);
     }
 
+
+    /**
+     * 从mysql流中的信息来创建HBase中表的信息
+     * @param mysqlSource
+     * @return
+     */
     public SingleOutputStreamOperator<TableProcessDim> createHBaseTable(DataStreamSource<String> mysqlSource) {
         return mysqlSource.flatMap(new RichFlatMapFunction<String, TableProcessDim>() {
                 public Connection connection;
@@ -152,6 +170,12 @@ public class DimApp extends BaseApp {
             });
     }
 
+
+    /**
+     * 使用ETL进行过滤，将空数据和不符合条件的数据过滤
+     * @param stream
+     * @return
+     */
     public SingleOutputStreamOperator<JSONObject> etl(DataStreamSource<String> stream) {
         return stream.flatMap((FlatMapFunction<String, JSONObject>) (value, out) -> {
             try {
