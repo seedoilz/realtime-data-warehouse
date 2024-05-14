@@ -34,4 +34,20 @@ public class SQLUtil {
                 "  'format' = 'json'\n" +
                 ")";
     }
+
+
+    /**
+     * 获取upsert kafka的连接，创建表格的语句最后一定要声明主键
+     * @param topicName
+     * @return
+     */
+    public static String getUpsertKafkaSQL(String topicName) {
+        return "WITH (\n" +
+                "  'connector' = 'upsert-kafka',\n" +
+                "  'topic' = '" + topicName + "',\n" +
+                "  'properties.bootstrap.servers' = '" + Constant.KAFKA_BROKERS + "',\n" +
+                "  'key.format' = 'json',\n" +
+                "  'value.format' = 'json'\n" +
+                ")";
+    }
 }
