@@ -22,7 +22,9 @@ public class SQLUtil {
                 "  `ts` bigint,\n" +
                 "  `data` map<STRING,STRING>,\n" +
                 "  `old` map<STRING,STRING>,\n" +
-                "   proc_time as PROCTIME() \n" +
+                "   proc_time as PROCTIME(), \n" +
+                "  row_time as TO_TIMESTAMP_LTZ(ts,3), \n" +
+                "  WATERMARK FOR row_time AS row_time - INTERVAL '5' SECOND\n" +
                 ") " + getKafkaSourceSQL(Constant.TOPIC_DB, groupId);
     }
 
