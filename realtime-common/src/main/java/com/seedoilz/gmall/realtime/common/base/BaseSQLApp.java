@@ -1,12 +1,8 @@
 package com.seedoilz.gmall.realtime.common.base;
 
 import com.seedoilz.gmall.realtime.common.constant.Constant;
-import com.seedoilz.gmall.realtime.common.util.FlinkSourceUtil;
 import com.seedoilz.gmall.realtime.common.util.SQLUtil;
-import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.connector.kafka.source.KafkaSource;
-import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 

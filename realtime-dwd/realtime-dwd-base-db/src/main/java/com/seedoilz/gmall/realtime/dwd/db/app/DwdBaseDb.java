@@ -1,7 +1,6 @@
 package com.seedoilz.gmall.realtime.dwd.db.app;
 
 import com.alibaba.fastjson.JSONObject;
-import com.mysql.cj.xdevapi.Table;
 import com.seedoilz.gmall.realtime.common.base.BaseApp;
 import com.seedoilz.gmall.realtime.common.bean.TableProcessDwd;
 import com.seedoilz.gmall.realtime.common.constant.Constant;
@@ -11,26 +10,17 @@ import com.seedoilz.gmall.realtime.common.util.JdbcUtil;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.common.state.BroadcastState;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.state.ReadOnlyBroadcastState;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.connector.base.DeliveryGuarantee;
-import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
-import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchemaBuilder;
-import org.apache.flink.connector.kafka.sink.KafkaSink;
 import org.apache.flink.streaming.api.datastream.BroadcastStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction;
 import org.apache.flink.util.Collector;
-import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.kafka.clients.producer.ProducerRecord;
-
-import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.util.Arrays;
 import java.util.HashMap;

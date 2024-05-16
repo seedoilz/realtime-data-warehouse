@@ -24,8 +24,6 @@ import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 
-import java.time.Duration;
-
 public class DwdBaseLog extends BaseApp {
     public static void main(String[] args) {
         new DwdBaseLog().start(10011, 4, "DwdBaseLog", Constant.TOPIC_LOG);

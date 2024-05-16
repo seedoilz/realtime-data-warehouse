@@ -3,7 +3,6 @@ package com.seedoilz.gmall.realtime.dwd.db.app;
 import com.seedoilz.gmall.realtime.common.base.BaseSQLApp;
 import com.seedoilz.gmall.realtime.common.constant.Constant;
 import com.seedoilz.gmall.realtime.common.util.SQLUtil;
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
