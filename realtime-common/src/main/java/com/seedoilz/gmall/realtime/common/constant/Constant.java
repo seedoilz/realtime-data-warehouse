@@ -3,6 +3,11 @@ package com.seedoilz.gmall.realtime.common.constant;
 public class Constant {
     public static final String KAFKA_BROKERS = "hadoop102:9092,hadoop103:9092,hadoop104:9092";
 
+    public static final String FENODES = "192.168.3.102:7030";
+    public static final String DORIS_DATABASE = "gmall2023_realtime";
+    public static final String DORIS_USERNAME = "root";
+    public static final String DORIS_PASSWORD = "Czy026110";
+
     public static final String TOPIC_DB = "topic_db";
     public static final String TOPIC_LOG = "topic_log";
 
@@ -37,6 +42,8 @@ public class Constant {
     public static final String TOPIC_DWD_TRADE_REFUND_PAYMENT_SUCCESS = "dwd_trade_refund_payment_success";
 
     public static final String TOPIC_DWD_USER_REGISTER = "dwd_user_register";
+
+    public static final String DWS_TRAFFIC_SOURCE_KEYWORD_PAGE_VIEW_WINDOW = "dws_traffic_source_keyword_page_view_window";
 
     public static final String HBASE_ZOOKEEPER_QUORUM = "hadoop102:2181,hadoop103:2181,hadoop104:2181";
 
