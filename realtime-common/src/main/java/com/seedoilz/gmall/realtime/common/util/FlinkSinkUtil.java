@@ -49,7 +49,7 @@ public class FlinkSinkUtil {
                 .build();
     }
 
-    public static DorisSink<String> getDorisSink(String tableName){
+    public static DorisSink<String> getDorisSink(String tableName) {
         DorisOptions.Builder dorisBuilder = DorisOptions.builder();
         dorisBuilder.setFenodes(Constant.FENODES)
                 .setTableIdentifier(Constant.DORIS_DATABASE + "." + tableName)
@@ -62,7 +62,7 @@ public class FlinkSinkUtil {
         properties.setProperty("read_json_by_line", "true");
 
         DorisExecutionOptions.Builder executionBuilder = DorisExecutionOptions.builder();
-        executionBuilder.setLabelPrefix("label-doris") //streamload label prefix
+        executionBuilder.setLabelPrefix("label-doris" + System.currentTimeMillis()) //streamload label prefix
                 .setDeletable(false)
                 .setStreamLoadProp(properties);
 

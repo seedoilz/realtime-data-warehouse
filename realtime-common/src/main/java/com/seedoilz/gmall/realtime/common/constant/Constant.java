@@ -45,6 +45,7 @@ public class Constant {
 
     public static final String DWS_TRAFFIC_SOURCE_KEYWORD_PAGE_VIEW_WINDOW = "dws_traffic_source_keyword_page_view_window";
     public static final String DWS_TRAFFIC_VC_CH_AR_IS_NEW_PAGE_VIEW_WINDOW = "dws_traffic_vc_ch_ar_is_new_page_view_window";
+    public static final String DWS_TRAFFIC_HOME_DETAIL_PAGE_VIEW_WINDOW = "dws_traffic_home_detail_page_view_window";
 
     public static final String HBASE_ZOOKEEPER_QUORUM = "hadoop102:2181,hadoop103:2181,hadoop104:2181";
 
