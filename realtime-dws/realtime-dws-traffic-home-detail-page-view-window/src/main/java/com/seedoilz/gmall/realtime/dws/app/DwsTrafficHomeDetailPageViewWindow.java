@@ -39,28 +39,48 @@ public class DwsTrafficHomeDetailPageViewWindow extends BaseApp {
 //        stream.print();
 
         // 2. 清洗过滤数据
-        SingleOutputStreamOperator<JSONObject> jsonObjStream = stream.flatMap(new FlatMapFunction<String, JSONObject>() {
-            @Override
-            public void flatMap(String s, Collector<JSONObject> collector) throws Exception {
-                JSONObject jsonObject = JSONObject.parseObject(s);
-                JSONObject page = jsonObject.getJSONObject("page");
-                String pageId = page.getString("page_id");
-                if (pageId != null) {
-                    if ("home".equals(pageId) || "good_detail".equals(pageId)) {
-                        collector.collect(jsonObject);
-                    }
-                }
-            }
-        });
+        SingleOutputStreamOperator<JSONObject> jsonObjStream = etl(stream);
 
         // 3. 设置水位线
-        SingleOutputStreamOperator<JSONObject> withWatermarkStream = jsonObjStream.assignTimestampsAndWatermarks(WatermarkStrategy.<JSONObject>forBoundedOutOfOrderness(Duration.ofSeconds(5L)).withTimestampAssigner(new SerializableTimestampAssigner<JSONObject>() {
-            @Override
-            public long extractTimestamp(JSONObject jsonObject, long l) {
-                return jsonObject.getLong("ts");
-            }
-        }));
+        SingleOutputStreamOperator<JSONObject> withWatermarkStream = getWithWatermarkStream(jsonObjStream);
 
+        // 4. 改变数据结构
+        SingleOutputStreamOperator<TrafficHomeDetailPageViewBean> beanStream = mapBeanStream(withWatermarkStream);
+
+        // 5. reduce聚合窗口
+        SingleOutputStreamOperator<TrafficHomeDetailPageViewBean> reducedStream = reduceWindowStream(beanStream);
+
+        // 6. 写入doris中
+        reducedStream.map(new DorisMapFunction<>()).sinkTo(FlinkSinkUtil.getDorisSink(Constant.DWS_TRAFFIC_HOME_DETAIL_PAGE_VIEW_WINDOW));
+    }
+
+    private SingleOutputStreamOperator<TrafficHomeDetailPageViewBean> reduceWindowStream(SingleOutputStreamOperator<TrafficHomeDetailPageViewBean> beanStream) {
+        SingleOutputStreamOperator<TrafficHomeDetailPageViewBean> reducedStream = beanStream.windowAll(TumblingEventTimeWindows.of(org.apache.flink.streaming.api.windowing.time.Time.seconds(10L)))
+                .reduce(new ReduceFunction<TrafficHomeDetailPageViewBean>() {
+                    @Override
+                    public TrafficHomeDetailPageViewBean reduce(TrafficHomeDetailPageViewBean trafficHomeDetailPageViewBean, TrafficHomeDetailPageViewBean t1) throws Exception {
+                        trafficHomeDetailPageViewBean.setGoodDetailUvCt(trafficHomeDetailPageViewBean.getGoodDetailUvCt() + t1.getGoodDetailUvCt());
+                        trafficHomeDetailPageViewBean.setHomeUvCt(trafficHomeDetailPageViewBean.getHomeUvCt() + t1.getHomeUvCt());
+                        return trafficHomeDetailPageViewBean;
+                    }
+                }, new AllWindowFunction<TrafficHomeDetailPageViewBean, TrafficHomeDetailPageViewBean, TimeWindow>() {
+                    @Override
+                    public void apply(TimeWindow timeWindow, Iterable<TrafficHomeDetailPageViewBean> iterable, Collector<TrafficHomeDetailPageViewBean> collector) throws Exception {
+                        String stt = DateFormatUtil.tsToDateTime(timeWindow.getStart());
+                        String edt = DateFormatUtil.tsToDateTime(timeWindow.getEnd());
+                        String curDt = DateFormatUtil.tsToDateForPartition(System.currentTimeMillis());
+                        for (TrafficHomeDetailPageViewBean value : iterable) {
+                            value.setStt(stt);
+                            value.setEdt(edt);
+                            value.setCurDate(curDt);
+                            collector.collect(value);
+                        }
+                    }
+                });
+        return reducedStream;
+    }
+
+    private SingleOutputStreamOperator<TrafficHomeDetailPageViewBean> mapBeanStream(SingleOutputStreamOperator<JSONObject> withWatermarkStream) {
         SingleOutputStreamOperator<TrafficHomeDetailPageViewBean> beanStream = withWatermarkStream.keyBy(new KeySelector<JSONObject, String>() {
             @Override
             public String getKey(JSONObject jsonObject) throws Exception {
@@ -111,31 +131,33 @@ public class DwsTrafficHomeDetailPageViewWindow extends BaseApp {
                 }
             }
         });
+        return beanStream;
+    }
 
-        SingleOutputStreamOperator<TrafficHomeDetailPageViewBean> reducedStream = beanStream.windowAll(TumblingEventTimeWindows.of(org.apache.flink.streaming.api.windowing.time.Time.seconds(10L)))
-                .reduce(new ReduceFunction<TrafficHomeDetailPageViewBean>() {
-                    @Override
-                    public TrafficHomeDetailPageViewBean reduce(TrafficHomeDetailPageViewBean trafficHomeDetailPageViewBean, TrafficHomeDetailPageViewBean t1) throws Exception {
-                        trafficHomeDetailPageViewBean.setGoodDetailUvCt(trafficHomeDetailPageViewBean.getGoodDetailUvCt() + t1.getGoodDetailUvCt());
-                        trafficHomeDetailPageViewBean.setHomeUvCt(trafficHomeDetailPageViewBean.getHomeUvCt() + t1.getHomeUvCt());
-                        return trafficHomeDetailPageViewBean;
-                    }
-                }, new AllWindowFunction<TrafficHomeDetailPageViewBean, TrafficHomeDetailPageViewBean, TimeWindow>() {
-                    @Override
-                    public void apply(TimeWindow timeWindow, Iterable<TrafficHomeDetailPageViewBean> iterable, Collector<TrafficHomeDetailPageViewBean> collector) throws Exception {
-                        String stt = DateFormatUtil.tsToDateTime(timeWindow.getStart());
-                        String edt = DateFormatUtil.tsToDateTime(timeWindow.getEnd());
-                        String curDt = DateFormatUtil.tsToDateForPartition(System.currentTimeMillis());
-                        for (TrafficHomeDetailPageViewBean value : iterable) {
-                            value.setStt(stt);
-                            value.setEdt(edt);
-                            value.setCurDate(curDt);
-                            collector.collect(value);
-                        }
-                    }
-                });
-        reducedStream.print();
+    private SingleOutputStreamOperator<JSONObject> getWithWatermarkStream(SingleOutputStreamOperator<JSONObject> jsonObjStream) {
+        SingleOutputStreamOperator<JSONObject> withWatermarkStream = jsonObjStream.assignTimestampsAndWatermarks(WatermarkStrategy.<JSONObject>forBoundedOutOfOrderness(Duration.ofSeconds(5L)).withTimestampAssigner(new SerializableTimestampAssigner<JSONObject>() {
+            @Override
+            public long extractTimestamp(JSONObject jsonObject, long l) {
+                return jsonObject.getLong("ts");
+            }
+        }));
+        return withWatermarkStream;
+    }
 
-        reducedStream.map(new DorisMapFunction<>()).sinkTo(FlinkSinkUtil.getDorisSink(Constant.DWS_TRAFFIC_HOME_DETAIL_PAGE_VIEW_WINDOW));
+    private SingleOutputStreamOperator<JSONObject> etl(DataStreamSource<String> stream) {
+        SingleOutputStreamOperator<JSONObject> jsonObjStream = stream.flatMap(new FlatMapFunction<String, JSONObject>() {
+            @Override
+            public void flatMap(String s, Collector<JSONObject> collector) throws Exception {
+                JSONObject jsonObject = JSONObject.parseObject(s);
+                JSONObject page = jsonObject.getJSONObject("page");
+                String pageId = page.getString("page_id");
+                if (pageId != null) {
+                    if ("home".equals(pageId) || "good_detail".equals(pageId)) {
+                        collector.collect(jsonObject);
+                    }
+                }
+            }
+        });
+        return jsonObjStream;
     }
 }
