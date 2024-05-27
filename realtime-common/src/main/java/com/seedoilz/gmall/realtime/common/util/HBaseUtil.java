@@ -1,6 +1,8 @@
 package com.seedoilz.gmall.realtime.common.util;
 
 import com.alibaba.fastjson.JSONObject;
+import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -116,6 +118,34 @@ public class HBaseUtil {
             e.printStackTrace();
         }
         table.close();
+    }
+
+    /**
+     * 读取HBase数据
+     * @param connection
+     * @param namespace
+     * @param tableName
+     * @param rowKey
+     * @return
+     * @throws IOException
+     */
+    public static JSONObject getCells(Connection connection, String namespace, String tableName, String rowKey) throws IOException {
+        // 1. 获取table
+        Table table = connection.getTable(TableName.valueOf(namespace, tableName));
+        // 2. 创建get对象
+        Get get = new Get(Bytes.toBytes(rowKey));
+        JSONObject jsonObject = new JSONObject();
+        try {
+            // 3. 调用get方法
+            Result result = table.get(get);
+            for (Cell cell : result.rawCells()) {
+                jsonObject.put(new String(CellUtil.cloneQualifier(cell)), new String(CellUtil.cloneValue(cell)));
+            }
+            table.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return jsonObject;
     }
 
     /**
