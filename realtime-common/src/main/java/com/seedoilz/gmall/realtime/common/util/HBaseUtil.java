@@ -1,6 +1,7 @@
 package com.seedoilz.gmall.realtime.common.util;
 
 import com.alibaba.fastjson.JSONObject;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.TableName;
@@ -8,8 +9,36 @@ import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class HBaseUtil {
+
+    /**
+     * 获取到 Hbase 的异步连接
+     *
+     * @return 得到异步连接对象
+     */
+    public static AsyncConnection getHBaseAsyncConnection() {
+        Configuration conf = new Configuration();
+        conf.set("hbase.zookeeper.quorum", "hadoop102");
+        conf.set("hbase.zookeeper.property.clientPort", "2181");
+        try {
+            return ConnectionFactory.createAsyncConnection(conf).get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void closeAsyncConnection(AsyncConnection asyncConnection ){
+        if (asyncConnection != null && !asyncConnection.isClosed()){
+            try {
+                asyncConnection.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     /**
      * 获取HBase链接
@@ -164,5 +193,32 @@ public class HBaseUtil {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 异步查询
+     * @param hBaseAsyncConnection
+     * @param namespace
+     * @param tableName
+     * @param rowKey
+     * @return
+     * @throws IOException
+     */
+    public static JSONObject getAsyncCells(AsyncConnection hBaseAsyncConnection, String namespace, String tableName, String rowKey) throws IOException {
+        // 1. 获取table
+        AsyncTable<AdvancedScanResultConsumer> table = hBaseAsyncConnection.getTable(TableName.valueOf(namespace, tableName));
+        // 2. 创建get对象
+        Get get = new Get(Bytes.toBytes(rowKey));
+        JSONObject jsonObject = new JSONObject();
+        try {
+            // 3. 调用get方法
+            Result result = table.get(get).get();
+            for (Cell cell : result.rawCells()) {
+                jsonObject.put(new String(CellUtil.cloneQualifier(cell)), new String(CellUtil.cloneValue(cell)));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return jsonObject;
     }
 }

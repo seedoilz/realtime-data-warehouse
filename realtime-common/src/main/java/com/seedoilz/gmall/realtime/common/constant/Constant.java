@@ -51,6 +51,7 @@ public class Constant {
     public static final String DWS_TRADE_CART_ADD_UU_WINDOW = "dws_trade_cart_add_uu_window";
     public static final String DWS_TRADE_ORDER_WINDOW = "dws_trade_order_window";
     public static final String DWS_TRADE_PAYMENT_SUC_WINDOW = "dws_trade_payment_suc_window";
+    public static final String DWS_TRADE_SKU_ORDER_WINDOW = "dws_trade_sku_order_window";
 
     public static final String HBASE_ZOOKEEPER_QUORUM = "hadoop102:2181,hadoop103:2181,hadoop104:2181";
 

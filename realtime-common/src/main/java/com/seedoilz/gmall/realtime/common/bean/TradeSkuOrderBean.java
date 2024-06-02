@@ -1,4 +1,4 @@
-package com.seedoilz.gmall.realtime.common.base;
+package com.seedoilz.gmall.realtime.common.bean;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import lombok.AllArgsConstructor;
