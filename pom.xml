@@ -13,8 +13,6 @@
         <module>realtime-dim</module>
         <module>realtime-dwd</module>
         <module>realtime-dws</module>
-        <module>realtime-dws/realtime-dws-traffic-vc-ch-ar-is_new-page-view-window</module>
-        <module>realtime-dws/realtime-dws-traffic-home-detail-page-view-window</module>
     </modules>
 
     <properties>
