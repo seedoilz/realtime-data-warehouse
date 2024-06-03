@@ -18,18 +18,34 @@ public class DimHBaseSinkFunction  extends RichSinkFunction<Tuple2<JSONObject, T
     Connection connection ;
     Jedis jedis;
 
+    /**
+     * 初始化数据库连接
+     * @param parameters
+     * @throws Exception
+     */
     @Override
     public void open(Configuration parameters) throws Exception {
         connection = HBaseUtil.getHBaseConnection();
         jedis = RedisUtil.getJedis();
     }
 
+    /**
+     * 关闭连接
+     * @throws Exception
+     */
     @Override
     public void close() throws Exception {
         HBaseUtil.closeConnection(connection);
         RedisUtil.closeJedis(jedis);
     }
 
+
+    /**
+     * 根据json流进行维度表的更新
+     * @param value
+     * @param context
+     * @throws Exception
+     */
     @Override
     public void invoke(Tuple2<JSONObject, TableProcessDim> value, Context context) throws Exception {
         JSONObject jsonObj = value.f0;
@@ -54,6 +70,11 @@ public class DimHBaseSinkFunction  extends RichSinkFunction<Tuple2<JSONObject, T
 
     }
 
+    /**
+     * 将数据处理后向HBase中进行插入
+     * @param data
+     * @param dim
+     */
     private void put(JSONObject data, TableProcessDim dim) {
         String sinkTable = dim.getSinkTable();
         String sinkRowKeyName = dim.getSinkRowKey();
@@ -66,6 +87,11 @@ public class DimHBaseSinkFunction  extends RichSinkFunction<Tuple2<JSONObject, T
         }
     }
 
+    /**
+     * 删除HBase中的某行数据
+     * @param data
+     * @param dim
+     */
     private void delete(JSONObject data, TableProcessDim dim) {
         String sinkTable = dim.getSinkTable();
         String sinkRowKeyName = dim.getSinkRowKey();

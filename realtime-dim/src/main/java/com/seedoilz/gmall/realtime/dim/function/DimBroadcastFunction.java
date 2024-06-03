@@ -22,6 +22,12 @@ public class DimBroadcastFunction extends BroadcastProcessFunction<JSONObject, T
         this.broadcastState = broadcastState;
     }
 
+
+    /**
+     * 从mysql中读取信息放入Hash表中，防止状态还没有配置表信息
+     * @param parameters
+     * @throws Exception
+     */
     @Override
     public void open(Configuration parameters) throws Exception {
         // 预加载初始的维度表信息

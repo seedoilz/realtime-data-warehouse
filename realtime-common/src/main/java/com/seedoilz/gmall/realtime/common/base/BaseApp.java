@@ -24,21 +24,21 @@ public abstract class BaseApp {
         // 设置并行度
         env.setParallelism(parallelism);
 
-//        // 设置状态后端
-//        env.setStateBackend(new HashMapStateBackend());
-//        // 开启checkpoint
-//        env.enableCheckpointing(5000);
-//
-//        // 设置checkpoint 模式 EXACTLY_ONCE
-//        env.getCheckpointConfig().setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE);
-//
-//        // checkpoint存储
-//        env.getCheckpointConfig().setCheckpointStorage("hdfs://hadoop102:8020/gmall2023/stream/" + ckAndGroupId);
-//        env.getCheckpointConfig().setMaxConcurrentCheckpoints(1);
-//        env.getCheckpointConfig().setMinPauseBetweenCheckpoints(5000);
-//        env.getCheckpointConfig().setCheckpointTimeout(10000);
-//
-//        env.getCheckpointConfig().setExternalizedCheckpointCleanup(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
+        // 设置状态后端
+        env.setStateBackend(new HashMapStateBackend());
+        // 开启checkpoint
+        env.enableCheckpointing(5000);
+
+        // 设置checkpoint 模式 EXACTLY_ONCE
+        env.getCheckpointConfig().setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE);
+
+        // checkpoint存储
+        env.getCheckpointConfig().setCheckpointStorage("hdfs://hadoop102:8020/gmall2023/stream/" + ckAndGroupId);
+        env.getCheckpointConfig().setMaxConcurrentCheckpoints(1);
+        env.getCheckpointConfig().setMinPauseBetweenCheckpoints(5000);
+        env.getCheckpointConfig().setCheckpointTimeout(10000);
+
+        env.getCheckpointConfig().setExternalizedCheckpointCleanup(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
 
         KafkaSource<String> source = FlinkSourceUtil.getKafkaSource(ckAndGroupId, topic);
 
